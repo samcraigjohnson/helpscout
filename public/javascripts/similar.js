@@ -17,9 +17,30 @@ $(function(){
 	});
 	clearFormVals($formVals);
     });
-
+    addDeleteListener();
     readCustomers();
 });
+
+function addDeleteListener(){
+    $('.delete-user').click(function(event){
+	console.log("clicked");
+	event.preventDefault();
+	var id = $(this).closest('tr').attr('id');
+	console.log(id);
+	var data = { c_id : parseFloat(id) };
+	$.ajax({
+	    type: "POST",
+	    url: "customers/remove",
+	    dataType: "text",
+	    contentType: "text/json",
+	    data: JSON.stringify(data),
+	    success: function(data){
+		console.log(data);
+		readCustomers();
+	    }
+	});
+    });
+}
 
 function readCustomers(){
     $.ajax({
@@ -30,13 +51,20 @@ function readCustomers(){
 	    console.log(data);
 	    $custTable = $("#customer-body");
 	    $custTable.html('');
+	    var text = "";
 	    for(var i=0; i < data.length; i++){
-		$custTable.append("<tr id="+data[i].id+">");
-		$custTable.append("<td>"+data[i].firstName+"</td>");
-		$custTable.append("<td>"+data[i].lastName+"</td>");
-		$custTable.append("<td>"+data[i].emails[0]+"</td>");
-		$custTable.append("</tr>");
+		text+="<tr id="+data[i].id+">";
+		text+="<td>"+data[i].firstName+"</td>";
+		text+="<td>"+data[i].lastName+"</td>";
+		text+="<td>"+data[i].emails[0]+"</td>";
+		text+="<td>"+data[i].numbers[0]+"</td>";
+		text+="<td>"+data[i].usernames[0].username+":"+data[i].usernames[0].platform+"</td>";
+		text+="<td>"+data[i].jobs[0].position+":"+data[i].jobs[0].company+"</td>";
+		text+="<td><a class='button delete-user alert' href='#'>X</a></td>";
+		text+="</tr>";
 	    }
+	    $custTable.append(text);
+	    addDeleteListener();
 	}
     });
 }

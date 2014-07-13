@@ -21,23 +21,19 @@ public class Customer extends Model{
     @Constraints.Required
     public String lastName;
 
+    @OneToMany(cascade=CascadeType.ALL)
+    public List<CustomerEmail> emails;
+    @OneToMany(cascade=CascadeType.ALL)
+    public List<CustomerJob> jobs;
+    @OneToMany(cascade=CascadeType.ALL)
+    public List<CustomerUsername> usernames;
+    @OneToMany(cascade=CascadeType.ALL)
+    public List<CustomerPhone> phoneNumbers;
+
     public Customer(String fName, String lName){
 	firstName = fName;
 	lastName = lName;
-	//CustomerEmail newEmail = new CustomerEmail(this, emailAddress);
-	//newEmail.save();
     }
-
-    /*
-    public List<String> getEmails(){
-	List<String> emails = new ArrayList<String>();
-
-	for(CustomerEmail ce: CustomerEmail.findEmailAddresses(id)){
-	    emails.add(ce.email);
-	}
-
-	return emails;
-	}*/
 
     public static Finder<Long, Customer> find = new Finder<Long, Customer>(Long.class, Customer.class);
 

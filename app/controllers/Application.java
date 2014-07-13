@@ -15,6 +15,7 @@ import dao.*;
 
 import views.html.*;
 import play.Logger;
+import java.lang.Exception;
 
 public class Application extends Controller {
 
@@ -38,35 +39,43 @@ public class Application extends Controller {
 	String ln = json.findPath("lastName").textValue();
 	String email = json.findPath("email").textValue();
 	String phoneNumber = json.findPath("phoneNumber").textValue();
-	String userName = json.findPath("username").textValue();
+	String username = json.findPath("username").textValue();
 	String platform = json.findPath("platform").textValue();
 	String position = json.findPath("position").textValue();
 	String company = json.findPath("company").textValue();
-	
-	if(validateString(fn) && validateString(ln)){
-	    Customer c = new Customer(fn, ln);
-	    c.save();
+	 
+	try{
+	    if(validateString(fn) && validateString(ln)){
+	     Customer c = new Customer(fn, ln);
+	     c.save();
+
+	     if(validateEmail(email)){
+		 CustomerEmail ce = new CustomerEmail(c, email);
+		 ce.save();
+	     }
+	     if(validateString(position) && validateString(company)){
+		 CustomerJob cj = new CustomerJob(c, position, company);
+		 cj.save();
+	     }
+	     if(validateString(username) && validateString(platform)){
+		 CustomerUsername cu = new CustomerUsername(c, username, platform);
+		 cu.save();
+	     }
+	     if(validatePhoneNumber(phoneNumber)){
+		 CustomerPhone cp = new CustomerPhone(c, phoneNumber);
+		 cp.save();
+	     }
+
+	     return ok(Json.toJson(c));
+	    }
+	    else{
+		return status(400, "Bad Request");
+	    } 
 	}
-	else{
-	    return status(400, "Bad Request");
+	catch(Exception e){
+	    return internalServerError("Error: " + e.getMessage());
 	}
 
-	if(validateEmail(email)){
-	    CustomerEmail ce = new CustomerEmail(c, email);
-	    ce.save();
-	}
-      
-	if(validate(position) && validate(company)){
-	    CustomerJob cj = new CustomerJob(c, position, company);
-	    cj.save();
-	}
-	
-	if(validate(username) && validate(platform)){
-	    CustomerUsername cu = new CustomerUsername(c, username, platform);
-	    cu.save();
-	}
-
-	return ok(Json.toJson(c));
     }
 
     /**
@@ -77,16 +86,42 @@ public class Application extends Controller {
 	return ok(JsonDao.getCustomerJson());
     }
 
-    private boolean validateString(String s){
-	if(s == null){
+    /**
+       API call used to delete a customer profile given a user id
+     */
+    @Transactional
+    public static Result removeCustomer(){
+	JsonNode json = request().body().asJson();
+	Long id = json.findValue("c_id").longValue();
+	Logger.debug("CustomerID:"+id);
+	Customer c = Customer.find.byId(id);
+	c.delete();
+	return ok("successfully deleted customer");
+    }
+
+    /**
+       API call used to get similar profiles
+     */
+    @Transactional
+    public static Result getSimilarCustomers(){
+	return ok(JsonDao.getSimilarCustomers());
+    }
+
+    private static boolean validateString(String s){
+	if(s == null || s.equals("")){
 	    return false;
 	}
 	return true;
     }
 
-    private boolean validateEmail(String s){
+    private static boolean validateEmail(String s){
 	return validateString(s);
 	    //todo
+    }
+
+    private static boolean validatePhoneNumber(String pNum){
+	return true;
+	//if len != 10 or not all digits; return false;
     }
 
 }

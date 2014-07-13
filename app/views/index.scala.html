@@ -2,22 +2,39 @@
 
 @main("Help Scout Test") {
     <div class="row">
-      <div class="medium-5 columns">
+      
           <h1>Add Customer</h1>
 
-          <form id="add-user" autocomplete="on">
-	    First Name: <input type="text" name="firstName">
-	    Last name: <input type="text" name="lastName">
-	    E-mail: <input type="email" name="email">
-	    Phone Number: <input type="text" name="phoneNumber">
-	    <h3>Social Media Usernames</h3>
-	    Username: <input type="text" name="username">
-	    Platform: <input type="text" name="platform">
-	    <h3>Jobs</h3>
-	    Company: <input type="text" name="company">
-	    Position: <input type="text" name="position">
-            
-	    <a class="button" id="add-customer-button">Add Customer</a>
+          <form id="add-user">
+	    
+	    <div class="medium-12 columns">
+	    <div class="row">
+	      <div class="medium-4 columns">
+		First Name: <input type="text" name="firstName">
+		Last name: <input type="text" name="lastName">
+		E-mail: <input type="email" name="email">
+		Phone Number: <input type="text" name="phoneNumber">
+	      </div>
+	      <div class="medium-4 columns">
+		<h5>Social Media Usernames</h5>
+		Username: <input type="text" name="username">
+		Platform: <input type="text" name="platform">
+		<a href="#">+ Add another</a>
+	      </div>
+	      <div class="medium-4 columns">
+		<h5>Jobs</h5>
+		Company: <input type="text" name="company">
+		Position: <input type="text" name="position">
+		<a href="#">+ Add Another</a>
+	      </div>
+	    </div>
+	    
+	    <div class="row">
+	      <div class="medium-3 medium-centered columns">
+		<a class="button" id="add-customer-button">Add Customer</a>
+	      </div>
+	    </div>
+	    </div>
 	  </form>
       </div>
     </div>
@@ -30,9 +47,10 @@
 	      <th width="100">First Name</th>
 	      <th width="100">Last Name</th>
 	      <th width="150">Email(s)</th>
-	      <th width="150">Phone Number(s)</th>
-	      <th width="100">Username(s)</th>
-	      <th width="100">Job(s)</th>
+	      <th width="125">Phone Number(s)</th>
+	      <th width="150">Username(s)</th>
+	      <th width="150">Job(s)</th>
+	      <th width="50">Delete</th>
 	  </thead>
 	  <tbody id="customer-body">
 	    

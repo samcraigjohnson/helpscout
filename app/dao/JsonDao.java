@@ -26,11 +26,23 @@ public class JsonDao{
 	    jo.put("numbers", getNumbers(c));
 	    jo.put("usernames", getUsernames(c));
 	    jo.put("jobs", getJobs(c));
-
+	    jo.put("id", c.id);
 	    cArray.add(jo);
 	}
 	
 	return cArray.toJSONString();
+    }
+    
+    /**
+       This method returns customer profiles that are considered
+       to be duplicates. The duplication is judged on similarities
+       in email, phone number, name, company role, usernames for
+       social media sites, etc.
+     */
+    public static String getSimilarCustomers(){
+	String query = "select..."//todo select statement, groupby
+	List<CustomerEmail> simEmails = CustomerEmail.find.where()
+	    .eq("");
     }
 
     /**

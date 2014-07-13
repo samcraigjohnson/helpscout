@@ -13,3 +13,6 @@ POST    /customers/add      	    controllers.Application.addCustomer()
 
 #GET to return all customers
 GET     /customers		    controllers.Application.getAllCustomers()
+
+#POST request to delete a customer from the database
+POST  	/customers/remove 	    controllers.Application.removeCustomer()
