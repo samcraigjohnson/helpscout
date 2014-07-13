@@ -3,6 +3,9 @@ Help Scout Engineer Test
 
 API Documentation
 -----------------
+
+***
+
 ##Get all customers
 
 `/customers`
@@ -26,6 +29,56 @@ Request Type: `GET`
       "emails":["jane.doe@gmail.com"],
       "firstName":"Jane"
     }
+    ]
+```
+
+***
+
+##Get similar customers
+
+`/customers/similar`
+
+Request Type: `GET`
+
+Returns an Array of Arrays. The nested Arrays are groupings of potential matches. Each
+entry in an Array is a customer object identical to the objects from `/customers`
+
+###Example Response:
+
+```javascript
+    [
+        [
+            {
+                "id":5,
+                "lastName":"smith",
+                "phoneNumber":["1235551234"],
+                "email":["asmith@gmail.com"],
+                "firstName":"anne"
+             },
+             {
+                "id":4,
+                "lastName":"smith",
+                "phoneNumber":["1235551234"],
+                "email":["annie.smith@gmail.com"],
+                "firstName":"a"
+              }
+         ],
+         [
+            {
+                "id":5,
+                "lastName":"santero",
+                "phoneNumber":["5554443333"],
+                "email":["santero.george@gmail.com"],
+                "firstName":"george"
+             },
+             {
+                "id":4,
+                "lastName":"s",
+                "phoneNumber":["5554443322"],
+                "email":["santero.george@hotmail.com"],
+                "firstName":"george"
+              }
+         ]
     ]
 ```
 
