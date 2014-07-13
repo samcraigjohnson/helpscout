@@ -7,6 +7,8 @@ import play.db.ebean.*;
 import play.data.format.*;
 import play.data.validation.*;
 
+import models.*;
+
 @Entity
 public class Customer extends Model{
     
@@ -19,8 +21,23 @@ public class Customer extends Model{
     @Constraints.Required
     public String lastName;
 
-    @Constraints.Required
-    public String email;
+    public Customer(String fName, String lName){
+	firstName = fName;
+	lastName = lName;
+	//CustomerEmail newEmail = new CustomerEmail(this, emailAddress);
+	//newEmail.save();
+    }
+
+    /*
+    public List<String> getEmails(){
+	List<String> emails = new ArrayList<String>();
+
+	for(CustomerEmail ce: CustomerEmail.findEmailAddresses(id)){
+	    emails.add(ce.email);
+	}
+
+	return emails;
+	}*/
 
     public static Finder<Long, Customer> find = new Finder<Long, Customer>(Long.class, Customer.class);
 

@@ -1,0 +1,54 @@
+package dao;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import models.*;
+
+import java.util.List;
+
+/**
+   This class is used to serve the JSON by accessing
+   the DB for specific API requests
+ */
+public class JsonDao{
+
+    /**
+       This method returns all of the customers, and aggregates
+       their data fields into a valid JSON string
+     */
+    public static String getCustomerJson(){
+	JSONArray cArray = new JSONArray();
+	for(Customer c: Customer.find.all()){
+	    JSONObject jo = new JSONObject();
+	    jo.put("firstName", c.firstName);
+	    jo.put("lastName", c.lastName);
+	    jo.put("emails", getEmails(c));
+	    //todo
+	    jo.put("numbers", "");
+	    jo.put("usernames", "");
+	    jo.put("jobs", "");
+
+	    cArray.add(jo);
+	}
+	
+	return cArray.toJSONString();
+    }
+
+    /**
+       Helper method used to return JSONArray of emails
+       given a specific customer
+     */
+    private static JSONArray getEmails(Customer c){
+	List<CustomerEmail> emails = CustomerEmail.find.where()
+		.eq("customer_id", c.id).findList();
+
+	JSONArray emailArray = new JSONArray();
+        for(CustomerEmail ce: emails){
+	    emailArray.add(ce.email);
+	}
+
+	return emailArray;
+    }
+
+
+}

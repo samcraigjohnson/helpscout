@@ -1,0 +1,42 @@
+package models;
+
+import java.util.*;
+import javax.persistence.*;
+
+import play.db.ebean.*;
+import play.data.format.*;
+import play.data.validation.*;
+
+@Entity
+public class CustomerEmail extends Model{
+    
+    @Id
+    public Long id;
+
+    @Constraints.Required
+    @ManyToOne
+    public Customer customer;
+
+    @Constraints.Required
+    public String email;
+
+    public CustomerEmail(Customer c, String emailAddress){
+	customer = c;
+	email = emailAddress;
+    }
+
+    public static Finder<Long, CustomerEmail> find =
+	new Finder<Long, CustomerEmail>(Long.class, CustomerEmail.class);
+
+    /**
+    public static CustomerEmail addEmailToCustomer(Long cId, String email){
+	CustomerEmail ce = new CustomerEmail(Customer.find.ref(cId), email);
+	ce.save();
+	return ce;
+    }
+
+    public static List<CustomerEmail> findEmailAddresses(Long cId){
+	return find.where().eq("customer", cId).findList();
+    }
+    */
+}

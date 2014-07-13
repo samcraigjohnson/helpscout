@@ -10,3 +10,6 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 #POST request to add a customer to the database
 POST    /customers/add      	    controllers.Application.addCustomer()
+
+#GET to return all customers
+GET     /customers		    controllers.Application.getAllCustomers()

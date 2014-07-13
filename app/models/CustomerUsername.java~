@@ -1,0 +1,35 @@
+package models;
+
+import java.util.*;
+package models;
+
+import java.util.*;
+import javax.persistence.*;
+
+import play.db.ebean.*;
+import play.data.format.*;
+import play.data.validation.*;
+
+@Entity
+public class CustomerUsername extends Model{
+    
+    @Id
+    public Long id;
+
+    @Constraints.Required
+    @ManyToOne
+    public Customer customer;
+
+    @Constraints.Required
+    public String username;
+    public String platform;
+
+    public CustomerUsername(Customer c, String username, String platform){
+	customer = c;
+	this.username = username;
+	this.platform = platform;
+    }
+
+    public static Finder<Long, CustomerUsername> find =
+	new Finder<Long, CustomerUsername>(Long.class, CustomerUsername.class);
+}

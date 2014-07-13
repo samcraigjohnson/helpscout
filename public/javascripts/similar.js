@@ -4,12 +4,42 @@ $(function(){
 	event.preventDefault();
 	$formVals = $("#add-user input");
 	var custObj = createObjectFromForm($formVals);
-	$.post("/customers/add", custObj, function(data){
-	    console.log(data);
+	$.ajax({
+	    type: 'POST',
+	    url:"/customers/add", 
+	    dataType: 'json',
+	    contentType: 'text/json',
+	    data:JSON.stringify(custObj), 
+	    success: function(data){
+		console.log(data);
+		readCustomers();
+	    }
 	});
 	clearFormVals($formVals);
     });
+
+    readCustomers();
 });
+
+function readCustomers(){
+    $.ajax({
+	type: "GET",
+	url: "/customers",
+	dataType: "json",
+	success: function(data){
+	    console.log(data);
+	    $custTable = $("#customer-body");
+	    $custTable.html('');
+	    for(var i=0; i < data.length; i++){
+		$custTable.append("<tr id="+data[i].id+">");
+		$custTable.append("<td>"+data[i].firstName+"</td>");
+		$custTable.append("<td>"+data[i].lastName+"</td>");
+		$custTable.append("<td>"+data[i].emails[0]+"</td>");
+		$custTable.append("</tr>");
+	    }
+	}
+    });
+}
 
 /*
 Helper function to turn all form input items into

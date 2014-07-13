@@ -19,3 +19,5 @@ libraryDependencies ++= Seq(
 	"org.webjars" % "foundation" % "5.3.0",
 	"org.webjars" % "jquery" % "1.11.1"
 )
+
+libraryDependencies += "com.googlecode.json-simple" % "json-simple" % "1.1.1"
