@@ -1,0 +1,27 @@
+package controllers;
+
+import play.*;
+import play.mvc.*;
+
+import views.html.*;
+
+public class Application extends Controller {
+
+    public static Result index() {
+        return ok(index.render("Hello World"));
+    }
+
+    /**
+       This method is used to capture the addition
+       of a customer to a user's customers.
+       Returns json object with success or failure.
+       If success returns customer info to add to customer
+       list.
+     */
+    public static Result addCustomer(){
+	//TODO add information to DB and return info if success
+
+	return ok("SUCCESSFUL JSON CALL");
+    }
+
+}

@@ -1,0 +1,16 @@
+@(message: String)
+
+@main("Help Scout Test") {
+    <div class="row">
+      <div class="medium-12 columns">
+          <h1>@message</h1>
+
+          <form id="add-user" autocomplete="on">
+	    First Name: <input type="text" name="firstName"><br>
+	    Last name: <input type="text" name="lastName"><br>
+	    E-mail: <input type="email" name="email"<br>
+            <a class="button" id="add-customer-button">Add Customer</a>
+	  </form>
+      </div>
+    </div>
+}
