@@ -8,6 +8,7 @@ import models.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.lang.NullPointerException;
 
 import play.Logger;
 
@@ -31,6 +32,16 @@ public class JsonDao{
     }
     
     /**
+       This method is used to return a success message
+     */
+    public static String successJson(String message){
+	JSONObject jo = new JSONObject();
+	jo.put("status", "success");
+	jo.put("message", message);
+	return jo.toJSONString();
+    }
+    
+    /**
        This method returns customer profiles that are considered
        to be duplicates. The duplication is judged on similarities
        in email, phone number, name, company role, usernames for
@@ -45,8 +56,8 @@ public class JsonDao{
 		//check all of the customers email addresses
 		for(CustomerEmail ce: c.emails){
 		    //find other customer's emails that match email that arent the customers
-		    List<CustomerEmail> dupEmails = CustomerEmail.find.where().eq("email", ce.email).ne("customer_id",c.id).findList();
-		    Logger.debug(c.firstName + " number of dup emails: " + dupEmails.size()); 
+		    List<CustomerEmail> dupEmails = CustomerEmail.find.where()
+			.eq("email", ce.email).ne("customer_id",c.id).findList();
 		    //Add all duplicates to an array
 		    for(CustomerEmail dupEmail: dupEmails){
 			addDuplicate(dupIds, dupEmail.customer, customerArray);
@@ -55,8 +66,8 @@ public class JsonDao{
 		}
 		//Repeat the process with phone numbers
 		for(CustomerPhone cp: c.phoneNumbers){
-		    List<CustomerPhone> dupPhones = CustomerPhone.find.where().eq("phoneNumber", cp.phoneNumber).ne("customer_id",c.id).findList();
-		    Logger.debug(c.firstName + " number of dup nums: " + dupPhones.size()); 
+		    List<CustomerPhone> dupPhones = CustomerPhone.find.where()
+			.eq("phoneNumber", cp.phoneNumber).ne("customer_id",c.id).findList();
 		    for(CustomerPhone dupPhone: dupPhones){
 			addDuplicate(dupIds, dupPhone.customer, customerArray);
 		    }
@@ -69,7 +80,6 @@ public class JsonDao{
 		    dupIds.add(c.id);
 		}
 	    }
-	    Logger.debug("Number of dups: " + dupIds.size());
 	}
 	
 	return dupArray.toJSONString();
@@ -80,7 +90,7 @@ public class JsonDao{
      */
     public static String updateCustomer(JsonNode json){
 	Long id = json.findValue("customer_id").longValue();
-	if(id != null){
+	try{
 	    Customer c = Customer.find.byId(id);
 	    Iterator<JsonNode> iterator = json.findValue("updates").iterator();
 	    while(iterator.hasNext()){
@@ -100,11 +110,11 @@ public class JsonDao{
 		}
 	    }
 	}
-	else{
+	catch(NullPointerException e){
 	    return "error json";
 	}
 
-	return "success json";
+	return successJson("Successfully updated customer");
     }
 
     /**
@@ -200,8 +210,8 @@ public class JsonDao{
 	JSONObject jo = new JSONObject();
 	jo.put("firstName", c.firstName);
 	jo.put("lastName", c.lastName);
-	jo.put("emails", getEmails(c));
-	jo.put("numbers", getNumbers(c));
+	jo.put("email", getEmails(c));
+	jo.put("phoneNumber", getNumbers(c));
 	jo.put("id", c.id);
 	return jo;
     }

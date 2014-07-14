@@ -4,6 +4,7 @@ $(function(){
 	event.preventDefault();
 	$formVals = $("#add-user input");
 	var custObj = createObjectFromForm($formVals);
+	custObj.email = [custObj.email];
 	$.ajax({
 	    type: 'POST',
 	    url:"/customers/add", 
@@ -24,11 +25,11 @@ function addMergeListener(){
     $('.merge-items').click(function(event){
 	event.preventDefault();
 	var id = $(this).siblings('p').first().attr('id');
-	var data = { customer_id : 1,
+	var data = { customer_id : 2,
 		     updates: [
 			 { action: "change",
 			   field: "email",
-			   oldValue: "sam@sam.com",
+			   oldValue: "sjohnson540@gmail.com",
 			   value: "sjohnson5410@gmail.com"}
 		          ]
 		   };
@@ -82,8 +83,8 @@ function readCustomers(){
 		text+="<tr id="+data[i].id+">";
 		text+="<td>"+data[i].firstName+"</td>";
 		text+="<td>"+data[i].lastName+"</td>";
-		text+="<td>"+data[i].emails[0]+"</td>";
-		text+="<td>"+data[i].numbers[0]+"</td>";
+		text+="<td>"+data[i].email+"</td>";
+		text+="<td>"+data[i].phoneNumber+"</td>";
 		text+="<td><a class='button delete-user alert' href='#'>X</a></td>";
 		text+="</tr>";
 	    }

@@ -16,6 +16,7 @@ import dao.*;
 import views.html.*;
 import play.Logger;
 import java.lang.Exception;
+import java.util.Iterator;
 
 public class Application extends Controller {
 
@@ -35,19 +36,21 @@ public class Application extends Controller {
     public static Result addCustomer(){
 	JsonNode json = request().body().asJson();
 	
-	String fn = json.findPath("firstName").textValue();
-	String ln = json.findPath("lastName").textValue();
-	String email = json.findPath("email").textValue();
-	String phoneNumber = json.findPath("phoneNumber").textValue();
+	String fn = json.findValue("firstName").textValue();
+	String ln = json.findValue("lastName").textValue();
+	Iterator<JsonNode> email = json.findValue("email").iterator();
+	String phoneNumber = json.findValue("phoneNumber").textValue();
 		 
 	try{
 	    if(validateString(fn) && validateString(ln)){
 	     Customer c = new Customer(fn, ln);
 	     c.save();
-
-	     if(validateEmail(email)){
-		 CustomerEmail ce = new CustomerEmail(c, email);
-		 ce.save();
+	     while(email.hasNext()){
+		 String emailAddress = email.next().textValue();
+		 if(validateEmail(emailAddress)){
+		     CustomerEmail ce = new CustomerEmail(c, emailAddress);
+		     ce.save();
+		 }
 	     }
 	     if(validatePhoneNumber(phoneNumber)){
 		 CustomerPhone cp = new CustomerPhone(c, phoneNumber);
@@ -85,7 +88,7 @@ public class Application extends Controller {
 	Customer c = Customer.find.byId(id);
 	c.delete();
 	//TODO return success json and id of deleted customer
-	return ok("successfully deleted customer");
+	return ok(JsonDao.successJson("Successfully deleted customer"));
     }
 
     /**
