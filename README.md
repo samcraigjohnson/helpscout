@@ -65,14 +65,14 @@ entry in an Array is a customer object identical to the objects from `/customers
          ],
          [
             {
-                "id":5,
+                "id":6,
                 "lastName":"santero",
                 "phoneNumber":["5554443333"],
                 "email":["santero.george@gmail.com"],
                 "firstName":"george"
              },
              {
-                "id":4,
+                "id":1,
                 "lastName":"s",
                 "phoneNumber":["5554443322"],
                 "email":["santero.george@hotmail.com"],
