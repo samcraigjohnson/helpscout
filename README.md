@@ -96,9 +96,11 @@ Request Type: `POST`
     
  *lastName*     : `required` String
     
- *email*        :  Array of String. Must be valid email addresses (text@text.com)
+ *email*        :  Array of String. Must be valid email addresses (text@text.com). Invalid addresses
+                    are quietly *not* added to customer object.
 
- *phoneNumbers* :  Array of String. Must be 10 digit phone numbers &amp; only digits
+ *phoneNumbers* :  Array of String. Must be 10 digit phone numbers &amp; only digits. Invalid phone
+                    numbers are quietly *not* added to customer object.
 
 
 ###Example Request:
