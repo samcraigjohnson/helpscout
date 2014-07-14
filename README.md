@@ -140,7 +140,7 @@ Request Type: `POST`
 ###Example Request:
 ```javascript
     { 
-        "customer_id":1,
+        "customer_id":1
     }
 ```
 
