@@ -209,5 +209,17 @@ Request Type: `POST`
     }
 ```
 
+***
+
+##Error Codes
+
+####Check error messages for further clarification
+
+`400` - Invalid input on required field
+
+`410` - Malformed JSON
+
+`500` - Internal Server Error
+
 
     
