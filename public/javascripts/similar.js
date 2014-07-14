@@ -5,6 +5,7 @@ $(function(){
 	$formVals = $("#add-user input");
 	var custObj = createObjectFromForm($formVals);
 	custObj.email = [custObj.email];
+	custObj.phoneNumber = [custObj.phoneNumber];
 	$.ajax({
 	    type: 'POST',
 	    url:"/customers/add", 

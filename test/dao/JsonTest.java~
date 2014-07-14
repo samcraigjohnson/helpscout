@@ -1,19 +1,24 @@
 package models;
 
 import models.*;
+import dao.*;
 import org.junit.*;
 import static org.junit.Assert.*;
 import play.test.WithApplication;
 import static play.test.Helpers.*;
 import play.db.ebean.*;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
-public class ModelsTest extends WithApplication {
+
+public class JsonTest extends WithApplication {
     
     @Test
     @Transactional
-    public void testAddGetCustomer(){
+    public void testAddCustomer(){
 	running(fakeApplication(inMemoryDatabase()), new Runnable(){
 		public void run(){
+		    JsonDao.add
 		    new Customer("test3", "name").save();
 		    Customer t = Customer.find.where().eq("lastName", "name").findUnique();
 		    assertNotNull(t);

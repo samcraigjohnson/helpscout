@@ -17,6 +17,8 @@ import views.html.*;
 import play.Logger;
 import java.lang.Exception;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Application extends Controller {
 
@@ -35,29 +37,32 @@ public class Application extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public static Result addCustomer(){
 	JsonNode json = request().body().asJson();
-	
+
 	String fn = json.findValue("firstName").textValue();
 	String ln = json.findValue("lastName").textValue();
-	Iterator<JsonNode> email = json.findValue("email").iterator();
-	String phoneNumber = json.findValue("phoneNumber").textValue();
+	JsonNode email = json.findValue("email");
+	JsonNode phoneNumber = json.findValue("phoneNumber");
 		 
 	try{
 	    if(validateString(fn) && validateString(ln)){
-	     Customer c = new Customer(fn, ln);
-	     c.save();
-	     while(email.hasNext()){
-		 String emailAddress = email.next().textValue();
-		 if(validateEmail(emailAddress)){
-		     CustomerEmail ce = new CustomerEmail(c, emailAddress);
-		     ce.save();
-		 }
-	     }
-	     if(validatePhoneNumber(phoneNumber)){
-		 CustomerPhone cp = new CustomerPhone(c, phoneNumber);
-		 cp.save();
-	     }
+		Iterator<JsonNode> emails = email.iterator();
+		List<String> emailStrings = new ArrayList<String>();
+		while(emails.hasNext()){
+		    String e = emails.next().textValue();
+		    if(validateEmail(e)){
+			emailStrings.add(e);
+		    }
+		}
+		Iterator<JsonNode> phoneNumbers = phoneNumber.iterator();
+		List<String> phoneStrings = new ArrayList<String>();
+		while(phoneNumbers.hasNext()){
+		    String num = phoneNumbers.next().textValue();
+		    if(validatePhoneNumber(num)){
+			phoneStrings.add(num);
+		    }
+		}
 
-	     return ok(JsonDao.getCustomerObject(c).toJSONString());
+		return ok(JsonDao.addCustomer(fn,ln,emailStrings,phoneStrings));
 	    }
 	    else{
 		return status(400, "Bad Request");
@@ -85,10 +90,11 @@ public class Application extends Controller {
     public static Result removeCustomer(){
 	JsonNode json = request().body().asJson();
 	Long id = json.findValue("customer_id").longValue();
-	Customer c = Customer.find.byId(id);
-	c.delete();
+	if(validateId(id)){
+	    return ok(JsonDao.removeCustomer(id));
+	}
 	//TODO return success json and id of deleted customer
-	return ok(JsonDao.successJson("Successfully deleted customer"));
+	return status(400, "Bad Request");
     }
 
     /**
@@ -126,6 +132,13 @@ public class Application extends Controller {
     private static boolean validatePhoneNumber(String pNum){
 	return true;
 	//if len != 10 or not all digits; return false;
+    }
+    
+    private static boolean validateId(Long id){
+	if(id != null){
+	    return true;
+	}
+	return false;
     }
 
 }

@@ -32,6 +32,26 @@ public class JsonDao{
     }
     
     /**
+       This method is used to add a new customer into the
+       database
+     */
+    public static String addCustomer(String fn, String ln, List<String> emails, List<String> phoneNumbers){
+	Customer c = new Customer(fn, ln);
+	c.save();
+	for(String email : emails){
+	    CustomerEmail ce = new CustomerEmail(c, email);
+	    ce.save();
+	    c.emails.add(ce);
+	}
+	for(String num : phoneNumbers){
+	    CustomerPhone cp = new CustomerPhone(c, num);
+	    cp.save();
+	    c.phoneNumbers.add(cp);
+	}
+	return getCustomerObject(c).toJSONString();
+    }
+    
+    /**
        This method is used to return a success message
      */
     public static String successJson(String message){
@@ -50,41 +70,84 @@ public class JsonDao{
     public static String getSimilarCustomers(){
 	JSONArray dupArray = new JSONArray();
 	ArrayList<Long> dupIds = new ArrayList<Long>();
-	for(Customer c: Customer.find.all()){
-	    if(!dupIds.contains(c.id)){
+	List<Customer> customers = Customer.find.all();
+	for(int i=0; i<customers.size(); i++){
+	    if(!dupIds.contains(customers.get(i).id)){
 		JSONArray customerArray = new JSONArray();
-		//check all of the customers email addresses
-		for(CustomerEmail ce: c.emails){
-		    //find other customer's emails that match email that arent the customers
-		    List<CustomerEmail> dupEmails = CustomerEmail.find.where()
-			.eq("email", ce.email).ne("customer_id",c.id).findList();
-		    //Add all duplicates to an array
-		    for(CustomerEmail dupEmail: dupEmails){
-			addDuplicate(dupIds, dupEmail.customer, customerArray);
-		    }
-		
-		}
-		//Repeat the process with phone numbers
-		for(CustomerPhone cp: c.phoneNumbers){
-		    List<CustomerPhone> dupPhones = CustomerPhone.find.where()
-			.eq("phoneNumber", cp.phoneNumber).ne("customer_id",c.id).findList();
-		    for(CustomerPhone dupPhone: dupPhones){
-			addDuplicate(dupIds, dupPhone.customer, customerArray);
+		for(int j=i; j<customers.size(); j++){
+		    if(checkIfDuplicate(customers.get(i), customers.get(j))){
+			addDuplicate(dupIds, customers.get(j), customerArray);
 		    }
 		}
-	    
 		//Check to see if any duplicates have been added
 		if(customerArray.size() > 0){
-		    customerArray.add(getCustomerObject(c));
+		    addDuplicate(dupIds, customers.get(i), customerArray);
 		    dupArray.add(customerArray);
-		    dupIds.add(c.id);
 		}
 	    }
 	}
 	
 	return dupArray.toJSONString();
     }
+    
+    /**
+       This method is used to compare two customers to see
+       if they could be potential duplicates
+     */
+    public static boolean checkIfDuplicate(Customer c1, Customer c2){
+	/*
+	  Check if the username portion of the 
+	  email matches
+	*/
+	for(CustomerEmail ce: c1.emails){
+	    for(CustomerEmail ce2: c2.emails){
+		String username = ce.email.split("@")[0].toLowerCase();
+		String username2 = ce2.email.split("@")[0].toLowerCase();
+		if(username.equalsIgnoreCase(username2)){
+		    return true;
+		}
 
+		if(username.contains(c2.lastName.toLowerCase()) && username.contains(c2.firstName.toLowerCase())){
+		    return true;
+		}
+
+		if(username2.contains(c1.firstName.toLowerCase()) && username2.contains(c1.lastName.toLowerCase())){
+		    return true;
+		}
+	    }
+	}
+	
+	/*
+	  Check if there are any phone number matches,
+	  first 9 digits consitues a match
+	 */
+	for(CustomerPhone cp: c1.phoneNumbers){
+	    for(CustomerPhone cp2: c2.phoneNumbers){
+		String num1 = cp.phoneNumber.substring(0, cp.phoneNumber.length()-1);
+		String num2 = cp2.phoneNumber.substring(0, cp2.phoneNumber.length()-1);
+		
+		if(num1.equals(num2)){
+		    return true;
+		}
+	    }
+	}
+
+	return false;
+    }
+
+    /**
+       Method used to remove a specific customer from the database
+    */
+    public static String removeCustomer(Long id){
+	try{
+	    Customer c = Customer.find.byId(id);
+	    c.delete();
+	    return successJson("Successfully deleted customer");
+	}
+	catch(Exception e){
+	    return "failureJson";
+	}
+    }
     /**
        Method used to update a customer's data
      */
@@ -120,20 +183,22 @@ public class JsonDao{
     /**
        Helped method used to add a piece of info
      */
-    private static void addInfo(Customer c, String field, String value){
+    public static void addInfo(Customer c, String field, String value){
 	if(field.equals("email")){
 	    CustomerEmail ce = new CustomerEmail(c,value);
 	    ce.save();
+	    c.emails.add(ce);
 	}
 	else if(field.equals("phoneNumber")){
 	    CustomerPhone cp = new CustomerPhone(c, value);
 	    cp.save();
+	    c.phoneNumbers.add(cp);
 	}
     }
     /**
        Helper method to remove a piece of info
      */
-    private static void deleteInfo(Customer c, String field, String value){
+    public static void deleteInfo(Customer c, String field, String value){
 	boolean found = false;
 	if(field.equals("email")){
 	    CustomerEmail toRemove = null;
@@ -145,6 +210,7 @@ public class JsonDao{
 	    }
 	    if(toRemove != null){
 		toRemove.delete();
+		c.emails.remove(toRemove);
 	    }//else throw NoSuchItemException
 	}
 	else if(field.equals("phoneNumber")){
@@ -157,6 +223,7 @@ public class JsonDao{
 	    }
 	    if(toRemove != null){
 		toRemove.delete();
+		c.phoneNumbers.remove(toRemove);
 	    }
 	}
 
@@ -167,7 +234,7 @@ public class JsonDao{
     /**
        Helper method to change a piece of info
      */
-    private static void changeInfo(Customer c, String field, String value, String oldValue){
+    public static void changeInfo(Customer c, String field, String value, String oldValue){
 	boolean found = false;
 	if(field.equals("email")){
 	    for(CustomerEmail ce: c.emails){
