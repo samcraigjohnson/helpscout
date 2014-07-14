@@ -8,11 +8,17 @@ GET     /                           controllers.Application.index()
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
-#POST request to add a customer to the database
+#Add a customer to the database
 POST    /customers/add      	    controllers.Application.addCustomer()
 
-#GET to return all customers
+#Return all customers
 GET     /customers		    controllers.Application.getAllCustomers()
 
-#POST request to delete a customer from the database
+#Delete a customer from the database
 POST  	/customers/remove 	    controllers.Application.removeCustomer()
+
+#Return a list of similar customers
+GET 	/customers/similar	    controllers.Application.getSimilarCustomers()
+
+#Update a customer
+POST 	/customers/update	    controllers.Application.updateCustomer()

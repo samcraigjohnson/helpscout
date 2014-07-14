@@ -39,11 +39,7 @@ public class Application extends Controller {
 	String ln = json.findPath("lastName").textValue();
 	String email = json.findPath("email").textValue();
 	String phoneNumber = json.findPath("phoneNumber").textValue();
-	String username = json.findPath("username").textValue();
-	String platform = json.findPath("platform").textValue();
-	String position = json.findPath("position").textValue();
-	String company = json.findPath("company").textValue();
-	 
+		 
 	try{
 	    if(validateString(fn) && validateString(ln)){
 	     Customer c = new Customer(fn, ln);
@@ -53,20 +49,12 @@ public class Application extends Controller {
 		 CustomerEmail ce = new CustomerEmail(c, email);
 		 ce.save();
 	     }
-	     if(validateString(position) && validateString(company)){
-		 CustomerJob cj = new CustomerJob(c, position, company);
-		 cj.save();
-	     }
-	     if(validateString(username) && validateString(platform)){
-		 CustomerUsername cu = new CustomerUsername(c, username, platform);
-		 cu.save();
-	     }
 	     if(validatePhoneNumber(phoneNumber)){
 		 CustomerPhone cp = new CustomerPhone(c, phoneNumber);
 		 cp.save();
 	     }
 
-	     return ok(Json.toJson(c));
+	     return ok(JsonDao.getCustomerObject(c).toJSONString());
 	    }
 	    else{
 		return status(400, "Bad Request");
@@ -90,13 +78,26 @@ public class Application extends Controller {
        API call used to delete a customer profile given a user id
      */
     @Transactional
+    @BodyParser.Of(BodyParser.Json.class)
     public static Result removeCustomer(){
 	JsonNode json = request().body().asJson();
-	Long id = json.findValue("c_id").longValue();
-	Logger.debug("CustomerID:"+id);
+	Long id = json.findValue("customer_id").longValue();
 	Customer c = Customer.find.byId(id);
 	c.delete();
+	//TODO return success json and id of deleted customer
 	return ok("successfully deleted customer");
+    }
+
+    /**
+       API call used to update a customer entry.
+       Either by adding info, changing info, or removing
+       info
+     */
+    @Transactional
+    @BodyParser.Of(BodyParser.Json.class)
+    public static Result updateCustomer(){
+	JsonNode json = request().body().asJson();
+	return ok(JsonDao.updateCustomer(json));
     }
 
     /**

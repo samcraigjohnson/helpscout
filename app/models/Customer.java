@@ -24,10 +24,6 @@ public class Customer extends Model{
     @OneToMany(cascade=CascadeType.ALL)
     public List<CustomerEmail> emails;
     @OneToMany(cascade=CascadeType.ALL)
-    public List<CustomerJob> jobs;
-    @OneToMany(cascade=CascadeType.ALL)
-    public List<CustomerUsername> usernames;
-    @OneToMany(cascade=CascadeType.ALL)
     public List<CustomerPhone> phoneNumbers;
 
     public Customer(String fName, String lName){
