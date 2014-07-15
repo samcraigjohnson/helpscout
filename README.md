@@ -65,14 +65,14 @@ entry in an Array is a customer object identical to the objects from `/customers
          ],
          [
             {
-                "id":5,
+                "id":6,
                 "lastName":"santero",
                 "phoneNumber":["5554443333"],
                 "email":["santero.george@gmail.com"],
                 "firstName":"george"
              },
              {
-                "id":4,
+                "id":1,
                 "lastName":"s",
                 "phoneNumber":["5554443322"],
                 "email":["santero.george@hotmail.com"],
@@ -96,9 +96,11 @@ Request Type: `POST`
     
  *lastName*     : `required` String
     
- *email*        :  Array of String. Must be valid email addresses (text@text.com)
+ *email*        :  Array of String. Must be valid email addresses (text@text.com). Invalid addresses
+                    are quietly *not* added to customer object.
 
- *phoneNumbers* :  Array of String. Must be 10 digit phone numbers &amp; only digits
+ *phoneNumbers* :  Array of String. Must be 10 digit phone numbers &amp; only digits. Invalid phone
+                    numbers are quietly *not* added to customer object.
 
 
 ###Example Request:
@@ -138,7 +140,7 @@ Request Type: `POST`
 ###Example Request:
 ```javascript
     { 
-        "customer_id":1,
+        "customer_id":1
     }
 ```
 
@@ -206,6 +208,18 @@ Request Type: `POST`
         "status":"success"
     }
 ```
+
+***
+
+##Error Codes
+
+####Check error messages for further clarification
+
+`400` - Invalid input on required field
+
+`410` - Malformed JSON
+
+`500` - Internal Server Error
 
 
     
