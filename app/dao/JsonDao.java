@@ -4,6 +4,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import com.fasterxml.jackson.databind.JsonNode;
 import models.*;
+import exceptions.*;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -72,21 +73,18 @@ public class JsonDao{
 	ArrayList<Long> dupIds = new ArrayList<Long>();
 	List<Customer> customers = Customer.find.all();
 	for(int i=0; i<customers.size(); i++){
-	    if(!dupIds.contains(customers.get(i).id)){
-		JSONArray customerArray = new JSONArray();
-		for(int j=i; j<customers.size(); j++){
-		    if(checkIfDuplicate(customers.get(i), customers.get(j))){
-			addDuplicate(dupIds, customers.get(j), customerArray);
-		    }
+	    JSONArray customerArray = new JSONArray();
+	    for(int j=i+1; j<customers.size(); j++){
+		if(checkIfDuplicate(customers.get(i), customers.get(j))){
+		    addDuplicate(customers.get(j), customerArray);
 		}
-		//Check to see if any duplicates have been added
-		if(customerArray.size() > 0){
-		    addDuplicate(dupIds, customers.get(i), customerArray);
-		    dupArray.add(customerArray);
-		}
+	    }    
+	    //Check to see if any duplicates have been added
+	    if(customerArray.size() > 0){
+		addDuplicate(customers.get(i), customerArray);
+		dupArray.add(customerArray);
 	    }
 	}
-	
 	return dupArray.toJSONString();
     }
     
@@ -97,7 +95,9 @@ public class JsonDao{
     public static boolean checkIfDuplicate(Customer c1, Customer c2){
 	/*
 	  Check if the username portion of the 
-	  email matches
+	  email matches, also check if the first customer's
+	  name is present in the second customer's email,
+	  and vice versa
 	*/
 	for(CustomerEmail ce: c1.emails){
 	    for(CustomerEmail ce2: c2.emails){
@@ -138,23 +138,23 @@ public class JsonDao{
     /**
        Method used to remove a specific customer from the database
     */
-    public static String removeCustomer(Long id){
-	try{
-	    Customer c = Customer.find.byId(id);
+    public static String removeCustomer(Long id) throws InvalidJsonException{
+	Customer c = Customer.find.byId(id);
+	if(c != null){
 	    c.delete();
 	    return successJson("Successfully deleted customer");
 	}
-	catch(Exception e){
-	    return "failureJson";
+	else{
+	    throw new InvalidJsonException("Customer does not exist");
 	}
     }
     /**
        Method used to update a customer's data
      */
-    public static String updateCustomer(JsonNode json){
+    public static String updateCustomer(JsonNode json) throws InvalidJsonException{
 	Long id = json.findValue("customer_id").longValue();
-	try{
-	    Customer c = Customer.find.byId(id);
+	Customer c = Customer.find.byId(id);
+	if(c != null){
 	    Iterator<JsonNode> iterator = json.findValue("updates").iterator();
 	    while(iterator.hasNext()){
 		JsonNode update = iterator.next();
@@ -171,34 +171,55 @@ public class JsonDao{
 		    String oldValue = update.findValue("oldValue").textValue();
 		    changeInfo(c, field, value, oldValue);
 		}
+		else{
+		    throw new InvalidJsonException("Action is not valid");
+		}
 	    }
 	}
-	catch(NullPointerException e){
-	    return "error json";
+	else{
+	    throw new InvalidJsonException("Customer does not exist");
 	}
-
 	return successJson("Successfully updated customer");
     }
 
     /**
        Helped method used to add a piece of info
      */
-    public static void addInfo(Customer c, String field, String value){
+    public static void addInfo(Customer c, String field, String value) throws InvalidJsonException{
 	if(field.equals("email")){
-	    CustomerEmail ce = new CustomerEmail(c,value);
-	    ce.save();
-	    c.emails.add(ce);
+	    boolean dup = false;
+	    for(CustomerEmail ce : c.emails){
+		if(ce.email.equalsIgnoreCase(value)){
+		    dup = true;
+		}
+	    }
+	    if(!dup){
+		CustomerEmail ce = new CustomerEmail(c,value);
+		ce.save();
+		c.emails.add(ce);
+	    }
 	}
 	else if(field.equals("phoneNumber")){
-	    CustomerPhone cp = new CustomerPhone(c, value);
-	    cp.save();
-	    c.phoneNumbers.add(cp);
+	    boolean dup = false;
+	    for(CustomerPhone cp : c.phoneNumbers){
+		if(cp.phoneNumber.equalsIgnoreCase(value)){
+		    dup = true;
+		}
+	    }
+	    if(!dup){
+		CustomerPhone cp = new CustomerPhone(c, value);
+		cp.save();
+		c.phoneNumbers.add(cp);
+	    }
+	}
+	else{
+	    throw new InvalidJsonException("Field is not valid");
 	}
     }
     /**
        Helper method to remove a piece of info
      */
-    public static void deleteInfo(Customer c, String field, String value){
+    public static void deleteInfo(Customer c, String field, String value) throws InvalidJsonException{
 	boolean found = false;
 	if(field.equals("email")){
 	    CustomerEmail toRemove = null;
@@ -211,7 +232,7 @@ public class JsonDao{
 	    if(toRemove != null){
 		toRemove.delete();
 		c.emails.remove(toRemove);
-	    }//else throw NoSuchItemException
+	    }
 	}
 	else if(field.equals("phoneNumber")){
 	    CustomerPhone toRemove = null;
@@ -228,13 +249,13 @@ public class JsonDao{
 	}
 
 	if(!found){
-	    //throw new NoSuchItemException
+	    throw new InvalidJsonException("Value does not exist for given customer");
 	}
     }
     /**
        Helper method to change a piece of info
      */
-    public static void changeInfo(Customer c, String field, String value, String oldValue){
+    public static void changeInfo(Customer c, String field, String value, String oldValue) throws InvalidJsonException{
 	boolean found = false;
 	if(field.equals("email")){
 	    for(CustomerEmail ce: c.emails){
@@ -255,18 +276,15 @@ public class JsonDao{
 	    }
 	}
 	if(!found){
-	    //throw NoSuchItemException
+	    throw new InvalidJsonException("Value does not exist for given customer");
 	}
     }
 
     /**
        Helper method to check duplication and return JSONObject
      */
-    private static void addDuplicate(List<Long> added, Customer c, JSONArray duplicates){
-	if(!added.contains(c.id)){
-	    duplicates.add(getCustomerObject(c));
-	    added.add(c.id);
-	}
+    private static void addDuplicate(Customer c, JSONArray duplicates){
+	duplicates.add(getCustomerObject(c));
     }
 
     /**

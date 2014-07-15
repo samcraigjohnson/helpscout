@@ -1,3 +1,5 @@
+var merge_customers = {};
+
 $(function(){
     //perform the add user ajax call when form submitted
     $("#add-customer-button").click(function(event){
@@ -22,32 +24,75 @@ $(function(){
     readCustomers();
 });
 
+function createMergeObject(merge_data){
+    var primary_cust = merge_data[0];
+    var updates = [];
+    var toDelete = [];
+    console.log("merge_data length: " +merge_data.length);
+    for(var i=1; i < merge_data.length; i++){
+	toDelete.push(merge_data[i].id);
+	if(merge_data[i].hasOwnProperty('email')){
+	    for(var e=0; e<merge_data[i].email.length;e++){
+		var update_obj = { 
+		    action : "add", 
+		    field: "email",
+		    value: merge_data[i].email[e]
+		};
+		updates.push(update_obj);
+	    }
+	}
+	if(merge_data[i].hasOwnProperty('phoneNumber')){
+	    for(var p=0; p<merge_data[i].phoneNumber.length;p++){
+		var update_obj = { 
+		    action : "add", 
+		    field: "phoneNumber",
+		    value: merge_data[i].phoneNumber[p]
+		};
+		updates.push(update_obj);
+	    }
+	}
+    }
+    var update_obj = { customer_id: primary_cust.id, updates: updates };
+    var to_return = { update_data: update_obj, delete_data: toDelete };
+    return to_return;
+}
+
 function addMergeListener(){
     $('.merge-items').click(function(event){
 	event.preventDefault();
-	var id = $(this).siblings('p').first().attr('id');
-	var data = { customer_id : 2,
-		     updates: [
-			 { action: "change",
-			   field: "email",
-			   oldValue: "sjohnson540@gmail.com",
-			   value: "sjohnson5410@gmail.com"}
-		          ]
-		   };
-	var stringData = JSON.stringify(data);
-	console.log(stringData);
+	var id = $(this).closest('div').attr('id');
+	var merge_data = merge_customers[id];
+	var data = createMergeObject(merge_data);
+	var updateStringData = JSON.stringify(data.update_data);
+	console.log(updateStringData);
 	$.ajax({
 	    type: "POST",
 	    url: "/customers/update",
 	    dataType: "text",
 	    contentType: "text/json",
-	    data: stringData,
+	    data: updateStringData,
 	    success: function(data){
-		console.log("added email");
-		console.log(data);
+		console.log("successful update");
 		readCustomers();
 	    }
 	});
+
+	console.log("delete length : " + data.delete_data.length);
+	for(var j=0; j<data.delete_data.length; j++){
+	    var delete_json = {customer_id: data.delete_data[j]};
+	    console.log("delete: " + JSON.stringify(delete_json));
+	    $.ajax({
+		type: "POST",
+		url: "customers/remove",
+		dataType: "text",
+		contentType: "text/json",
+		data: JSON.stringify(delete_json),
+		success: function(data){
+		    console.log(data);
+		    readCustomers();
+		}
+	    });
+	}
     });
 }
 
@@ -81,11 +126,7 @@ function readCustomers(){
 	    $custTable.html('');
 	    var text = "";
 	    for(var i=0; i < data.length; i++){
-		text+="<tr id="+data[i].id+">";
-		text+="<td>"+data[i].firstName+"</td>";
-		text+="<td>"+data[i].lastName+"</td>";
-		text+="<td>"+data[i].email+"</td>";
-		text+="<td>"+data[i].phoneNumber+"</td>";
+		text+=createCustomerRow(data[i]);
 		text+="<td><a class='button delete-user alert' href='#'>X</a></td>";
 		text+="</tr>";
 	    }
@@ -101,19 +142,43 @@ function readCustomers(){
 	success: function(data){
 	    console.log("Similar data:");
 	    console.log(data);
-	    $("#duplicate-customers").html('');
+	    merge_customers = {};
+	    $("#duplicates-tables").html('');
 	    var text = "";
 	    for(var i=0; i < data.length; i++){
-		text+="<li>";
+		merge_customers["table-"+i] = data[i];
+		text+="<div id='table-"+i+"'>";
+		text+="<table>";
 		for(var j=0; j < data[i].length; j++){
-		    text+="<span id="+data[i][j].id+"> "+data[i][j].firstName+"</span>, ";
+		    text+=createCustomerRow(data[i][j]);
+		    text+="</tr>";
 		}
-		text+="<a href='#' class='button small merge-items'>MERGE</a></li>";
+		text+="</table>";
+		text+="<a href='#' class='button small merge-items'>MERGE</a>";
+		text+="</div>";
 	    }
-	    $("#duplicate-customers").append(text);
+	    $("#duplicates-tables").append(text);
 	    addMergeListener();
 	}
     });
+}
+
+function createCustomerRow(data){
+    var text = "";
+    text+="<tr id="+data.id+">";
+    text+="<td>"+data.firstName+"</td>";
+    text+="<td>"+data.lastName+"</td>";
+    text+="<td>";
+    for(var i =0; i<data.email.length; i++){
+	text+=data.email[i]+"<br>";
+    }
+    text+="</td>";
+    text+="<td>";
+    for(var j=0; j<data.phoneNumber.length;j++){
+	text+=data.phoneNumber[j]+"<br>";
+    }
+    text+="</td>";
+    return text;
 }
 
 /*

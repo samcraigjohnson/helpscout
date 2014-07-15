@@ -1,6 +1,7 @@
-package models;
+package dao;
 
 import models.*;
+import exceptions.*;
 import dao.JsonDao;
 
 import org.junit.*;
@@ -50,9 +51,14 @@ public class JsonTest extends WithApplication {
 		    String json = JsonDao.addCustomer("fake", "name", emails, phoneNums);
 		    Customer t = Customer.find.where().eq("firstName", "fake").findUnique();
 		    assertNotNull(t);
-		    JsonDao.removeCustomer(t.id);
-		    List<Customer> customers = Customer.find.all();
-		    assertEquals(0, customers.size());
+		    try{
+			JsonDao.removeCustomer(t.id);
+			List<Customer> customers = Customer.find.all();
+			assertEquals(0, customers.size());
+		    }
+		    catch(InvalidJsonException e){
+			assertFalse("Invalid input", true);
+		    }
 		}
 	});
     }
@@ -72,19 +78,22 @@ public class JsonTest extends WithApplication {
 		    Customer t = Customer.find.where().eq("firstName", "fake").findUnique();
 		    JsonDao.addCustomer("fake2", "nam2", emails, phoneNums);
 		    Customer t2 = Customer.find.where().eq("firstName", "fake2").findUnique();
-		    
-		    assertTrue(JsonDao.checkIfDuplicate(t,t2));
-
-		    JsonDao.deleteInfo(t, "email", "test@test.com");
-		    JsonDao.deleteInfo(t, "email", "test2@test.com");
-		    
-		    assertTrue(JsonDao.checkIfDuplicate(t, t2));
-		    
-		    JsonDao.addInfo(t, "email", "fake2nam2540@hotmail.com");
-		    t.refresh();
-
-		    assertTrue(JsonDao.checkIfDuplicate(t,t2));
-
+		    try{
+			assertTrue(JsonDao.checkIfDuplicate(t,t2));
+			
+			JsonDao.deleteInfo(t, "email", "test@test.com");
+			JsonDao.deleteInfo(t, "email", "test2@test.com");
+			
+			assertTrue(JsonDao.checkIfDuplicate(t, t2));
+			
+			JsonDao.addInfo(t, "email", "fake2nam2540@hotmail.com");
+			t.refresh();
+			
+			assertTrue(JsonDao.checkIfDuplicate(t,t2));
+		    }
+		    catch(InvalidJsonException e){
+			assertFalse("Invalid Input", true);
+		    }
 		}
 	});
     }
@@ -103,19 +112,25 @@ public class JsonTest extends WithApplication {
 		    String json = JsonDao.addCustomer("fake", "name", emails, phoneNums);	     
 		    Customer t = Customer.find.where().eq("firstName", "fake").findUnique();
 		    assertNotNull(t);
-		    JsonDao.deleteInfo(t, "email", "test@test.com");
-		    assertEquals(t.emails.size(), 1);
 		    
-		    JsonDao.deleteInfo(t, "phoneNumber", "2223334444");
-		    assertEquals(t.phoneNumbers.size(), 1);
-		    
-		    JsonDao.addInfo(t, "email", "t@t.com");
-		    assertEquals(t.emails.size(), 2);
-
-		    CustomerEmail ce = CustomerEmail.find.where().eq("email", "t@t.com").findUnique();
-		    JsonDao.changeInfo(t, "email", "test2@test.com", "t@t.com");
-		    ce.refresh();
-		    assertEquals(ce.email, "test2@test.com");
+		    try{
+			JsonDao.deleteInfo(t, "email", "test@test.com");
+			assertEquals(t.emails.size(), 1);
+			
+			JsonDao.deleteInfo(t, "phoneNumber", "2223334444");
+			assertEquals(t.phoneNumbers.size(), 1);
+			
+			JsonDao.addInfo(t, "email", "t@t.com");
+			assertEquals(t.emails.size(), 2);
+			
+			CustomerEmail ce = CustomerEmail.find.where().eq("email", "t@t.com").findUnique();
+			JsonDao.changeInfo(t, "email", "test2@test.com", "t@t.com");
+			ce.refresh();
+			assertEquals(ce.email, "test2@test.com");
+		    }
+		    catch(InvalidJsonException e){
+			assertFalse("Invalid input", true);
+		    }
 		}
 	});
     }

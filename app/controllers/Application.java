@@ -2,6 +2,7 @@ package controllers;
 
 import play.*;
 import play.mvc.*;
+import exceptions.*;
 
 //JSON imports
 import play.libs.Json;
@@ -19,6 +20,8 @@ import java.lang.Exception;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Application extends Controller {
 
@@ -78,8 +81,14 @@ public class Application extends Controller {
        API call used to return a list of all the customers given
        a User's username
      */
+    @Transactional
     public static Result getAllCustomers(){
-	return ok(JsonDao.getCustomerJson());
+	try{
+	    return ok(JsonDao.getCustomerJson());
+	}
+	catch(Exception e){
+	    return internalServerError("Error: " + e.getMessage());
+	}
     }
 
     /**
@@ -90,11 +99,20 @@ public class Application extends Controller {
     public static Result removeCustomer(){
 	JsonNode json = request().body().asJson();
 	Long id = json.findValue("customer_id").longValue();
-	if(validateId(id)){
-	    return ok(JsonDao.removeCustomer(id));
+	try{
+	    if(validateId(id)){
+		return ok(JsonDao.removeCustomer(id));
+	    }
+	    else{
+		return status(400, "Invalid Id");
+	    }
 	}
-	//TODO return success json and id of deleted customer
-	return status(400, "Bad Request");
+	catch(InvalidJsonException e){
+	    return status(410, e.getMessage());
+	}
+	catch(Exception e){
+	    return internalServerError("Error: " + e.getMessage());
+	}
     }
 
     /**
@@ -106,7 +124,15 @@ public class Application extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public static Result updateCustomer(){
 	JsonNode json = request().body().asJson();
-	return ok(JsonDao.updateCustomer(json));
+	try{
+	    return ok(JsonDao.updateCustomer(json));
+	}
+	catch(InvalidJsonException e){
+	    return status(410, e.getMessage());
+	}
+	catch(Exception e){
+	    return internalServerError("Error: " + e.getMessage());
+	}
     }
 
     /**
@@ -114,7 +140,12 @@ public class Application extends Controller {
      */
     @Transactional
     public static Result getSimilarCustomers(){
-	return ok(JsonDao.getSimilarCustomers());
+	try{
+	    return ok(JsonDao.getSimilarCustomers());
+	}
+	catch(Exception e){
+	    return internalServerError("Error: " + e.getMessage());
+	}
     }
 
     private static boolean validateString(String s){
@@ -124,17 +155,25 @@ public class Application extends Controller {
 	return true;
     }
 
-    private static boolean validateEmail(String s){
-	return validateString(s);
-	    //todo
+    /**
+       A valid email address takes the form (foo@bar.com)
+     */
+    public static boolean validateEmail(String s){
+	Pattern p = Pattern.compile(".+@[a-zA-z0-9]+[.][a-zA-Z]{0,3}");
+	Matcher m = p.matcher(s);
+	return m.matches();
     }
 
-    private static boolean validatePhoneNumber(String pNum){
-	return true;
-	//if len != 10 or not all digits; return false;
+    /**
+       A valid phone number has 10 digits and nothing else
+     */
+    public static boolean validatePhoneNumber(String pNum){
+	Pattern p = Pattern.compile("[0-9]{10}");
+	Matcher m = p.matcher(pNum);
+	return m.matches();
     }
     
-    private static boolean validateId(Long id){
+    public static boolean validateId(Long id){
 	if(id != null){
 	    return true;
 	}

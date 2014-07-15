@@ -1,0 +1,22 @@
+package controllers;
+
+import controllers.*;
+
+import org.junit.*;
+import static org.junit.Assert.*;
+import play.test.WithApplication;
+import static play.test.Helpers.*;
+import play.db.ebean.*;
+import java.util.*;
+
+public class ValidationTest extends WithApplication {
+ 
+    @Test
+    @Transactional
+    public void testValidations(){
+	running(fakeApplication(inMemoryDatabase()), new Runnable(){
+		public void run(){
+		    assertTrue(true);
+		}
+	});
+    }
